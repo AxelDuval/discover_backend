@@ -1,5 +1,7 @@
 const HttpError = require("../models/http-error");
+const getCoordsForAddress = require("../util/location");
 const { v4: uuidv4 } = require("uuid");
+const { validationResult } = require("express-validator");
 
 let PLACES = [
   {
@@ -51,16 +53,27 @@ function getPlacesByUserId(req, res, next) {
   });
 
   if (!places || places.length === 0) {
-    return next(
-      new HttpError("Pas de lieu trouvé pour cet utilisateur", 404)
-    );
+    return next(new HttpError("Pas de lieu trouvé pour cet utilisateur", 404));
   }
 
   res.json({ places: places });
 }
 
-function createPlace(req, res, next) {
-  const { title, description, coordinates, address, creator } = req.body;
+// CREATE PLACE
+async function createPlace(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new HttpError("Les données saisies sont invalides", 422));
+  }
+
+  const { title, description, address, creator } = req.body;
+
+  let coordinates;
+  try {
+    coordinates = await getCoordsForAddress(address);
+  } catch (error) {
+    return next(error);
+  }
 
   const createdPlace = {
     id: uuidv4(),
@@ -74,8 +87,14 @@ function createPlace(req, res, next) {
   res.status(201).json({ place: createdPlace });
 }
 
+// UPDATE PLACE
 function updatePlace(req, res, next) {
   const { title, description } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors);
+    throw new HttpError("Les données saisies sont invalides", 422);
+  }
   const placeId = req.params.pid;
   const updatedPlace = { ...PLACES.find((p) => p.id === placeId) };
   const placeIndex = PLACES.findIndex((p) => p.id === placeId);
@@ -87,8 +106,12 @@ function updatePlace(req, res, next) {
   res.status(200).json({ place: updatedPlace });
 }
 
+// DELETE PLACE
 function deletePlace(req, res, next) {
   const placeId = req.params.pid;
+  if (!PLACES.find((p) => p.id === placeId)) {
+    throw new HttpError("Aucun lieu trouvé avec cet identifiant");
+  }
   PLACES = PLACES.filter((p) => p.id !== placeId);
   res.status(200).json({ message: "Le lieu a bien été supprimé" });
 }

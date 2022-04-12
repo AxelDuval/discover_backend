@@ -1,6 +1,8 @@
 const HttpError = require("../models/http-error");
 const { v4: uuidv4 } = require("uuid");
 const res = require("express/lib/response");
+const { validationResult } = require("express-validator");
+
 
 const USERS = [
   {
@@ -16,6 +18,16 @@ const getUsers = (req, res, next) => {
 };
 const signUp = (req, res, next) => {
   const { name, email, password } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors);
+    throw new HttpError("Les données saisies sont invalides", 422);
+  }
+
+  const hasUser = USERS.find((u) => u.email === email);
+  if (hasUser) {
+    throw new HttpError("cet email est déja utilisé", 422);
+  }
   const createdUser = {
     id: uuidv4(),
     name,
@@ -27,7 +39,7 @@ const signUp = (req, res, next) => {
 };
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  const identifiedUser = USERS.find((u => u.email === email));
+  const identifiedUser = USERS.find((u) => u.email === email);
 
   if (!identifiedUser || identifiedUser.password !== password) {
     throw new HttpError("Identifiants incorrects", 401);
