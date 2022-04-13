@@ -1,18 +1,9 @@
 const HttpError = require("../models/http-error");
-const { v4: uuidv4 } = require("uuid");
 const res = require("express/lib/response");
 const { validationResult } = require("express-validator");
 const User = require("../models/user");
 
-const USERS = [
-  {
-    id: "u1",
-    name: "Axel Duval",
-    email: "test@test.fr",
-    password: "testers",
-  },
-];
-
+// GET ALL USERS
 async function getUsers(req, res, next) {
   let users;
   try {
@@ -27,7 +18,8 @@ async function getUsers(req, res, next) {
   res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 }
 
-// SIGNUP
+
+// SIGNUP (CREATE NEW USER)
 async function signUp(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -75,7 +67,8 @@ async function signUp(req, res, next) {
   res.status(201).json({ user: createdUser.toObject({ getters: true }) });
 }
 
-// LOGIN
+
+// LOGIN (GET AN EXISTING USER)
 async function login(req, res, next) {
   const { email, password } = req.body;
 

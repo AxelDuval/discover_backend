@@ -1,40 +1,14 @@
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../util/location");
-const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 const Place = require("../models/place");
 const User = require("../models/user");
 const { default: mongoose } = require("mongoose");
 
-let PLACES = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description:
-      "L'Empire State Building est un gratte-ciel de style Art déco situé dans l'arrondissement de Manhattan, à New York.",
-    imageUrl: "https://picsum.photos/500?grayscale",
-    address: "34th st, New York, NY 10001",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9878584,
-    },
-    creator: "u1",
-  },
-  {
-    id: "p2",
-    title: "Empire State Building 2",
-    description:
-      "L'Empire State Building est un gratte-ciel de style Art déco situé dans l'arrondissement de Manhattan, à New York.",
-    imageUrl: "https://picsum.photos/500?grayscale",
-    address: "34th st, New York, NY 10001",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9878584,
-    },
-    creator: "u2",
-  },
-];
 
+// CRUD OPERATIONS
+
+// READ
 async function getPlaceById(req, res, next) {
   const placeId = req.params.pid;
   let place;
@@ -58,6 +32,7 @@ async function getPlacesByUserId(req, res, next) {
   const userId = req.params.uid;
   let userPlaces;
   try {
+    // the populate() method allows to get access to documents stored in different collections
     userPlaces = await User.findById(userId).populate("places");
   } catch (err) {
     const error = new HttpError(
@@ -74,6 +49,7 @@ async function getPlacesByUserId(req, res, next) {
     places: userPlaces.places.map((place) => place.toObject({ getters: true })),
   });
 }
+
 
 // CREATE PLACE
 async function createPlace(req, res, next) {
@@ -137,6 +113,7 @@ async function createPlace(req, res, next) {
   res.status(201).json({ place: createdPlace });
 }
 
+
 // UPDATE PLACE
 async function updatePlace(req, res, next) {
   const errors = validationResult(req);
@@ -174,6 +151,7 @@ async function updatePlace(req, res, next) {
 
   res.status(200).json({ place: place.toObject({ getters: true }) });
 }
+
 
 // DELETE PLACE
 async function deletePlace(req, res, next) {
