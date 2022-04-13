@@ -2,6 +2,7 @@ const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../util/location");
 const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
+const Place = require("../models/place");
 
 let PLACES = [
   {
@@ -32,31 +33,44 @@ let PLACES = [
   },
 ];
 
-function getPlaceById(req, res, next) {
+async function getPlaceById(req, res, next) {
   const placeId = req.params.pid;
-
-  const place = PLACES.find((p) => {
-    return p.id === placeId;
-  });
-
-  if (!place) {
-    throw new HttpError("Pas de lieu trouvé avec cet identifiant", 404);
+  let place;
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    const error = new HttpError(
+      "Un problème est survenu, merci de réessayer",
+      500
+    );
+    return next(error);
   }
-  res.json({ place: place });
+  if (!place) {
+    const error = new HttpError("Pas de lieu trouvé avec cet identifiant", 404);
+    return next(error);
+  }
+  res.json({ place: place.toObject({ getters: true }) });
 }
 
-function getPlacesByUserId(req, res, next) {
+async function getPlacesByUserId(req, res, next) {
   const userId = req.params.uid;
-
-  const places = PLACES.filter((p) => {
-    return p.creator === userId;
-  });
-
+  let places;
+  try {
+    places = await Place.find({ creator: userId });
+  } catch (err) {
+    const error = new HttpError(
+      "Un problème est survenu, merci de réessayer",
+      500
+    );
+    return next(error);
+  }
   if (!places || places.length === 0) {
     return next(new HttpError("Pas de lieu trouvé pour cet utilisateur", 404));
   }
 
-  res.json({ places: places });
+  res.json({
+    places: places.map((place) => place.toObject({ getters: true })),
+  });
 }
 
 // CREATE PLACE
@@ -75,44 +89,90 @@ async function createPlace(req, res, next) {
     return next(error);
   }
 
-  const createdPlace = {
-    id: uuidv4(),
+  const createdPlace = new Place({
     title,
     description,
-    location: coordinates,
     address,
+    location: coordinates,
+    image: "https://picsum.photos/500?grayscale",
     creator,
-  };
-  PLACES.push(createdPlace); //unshift(createdPlace)
+  });
+
+  try {
+    await createdPlace.save();
+  } catch (err) {
+    const error = new HttpError(
+      "La création du lieu a échoué, merci de réessayer.",
+      500
+    );
+    return next(error);
+  }
+
   res.status(201).json({ place: createdPlace });
 }
 
 // UPDATE PLACE
-function updatePlace(req, res, next) {
-  const { title, description } = req.body;
+async function updatePlace(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors);
     throw new HttpError("Les données saisies sont invalides", 422);
   }
+  const { title, description } = req.body;
   const placeId = req.params.pid;
-  const updatedPlace = { ...PLACES.find((p) => p.id === placeId) };
-  const placeIndex = PLACES.findIndex((p) => p.id === placeId);
-  updatedPlace.title = title;
-  updatedPlace.description = description;
 
-  PLACES[placeIndex] = updatedPlace;
+  let place;
 
-  res.status(200).json({ place: updatedPlace });
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    const error = new HttpError(
+      "Un problème est survenu, le lieu n'a pas été mis à jour",
+      500
+    );
+    return next(error);
+  }
+
+  place.title = title;
+  place.description = description;
+
+  try {
+    await place.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Un problème est survenu, le lieu n'a pas été mis à jour",
+      500
+    );
+    return next(error);
+  }
+
+  res.status(200).json({ place: place.toObject({ getters: true }) });
 }
 
 // DELETE PLACE
-function deletePlace(req, res, next) {
+async function deletePlace(req, res, next) {
   const placeId = req.params.pid;
-  if (!PLACES.find((p) => p.id === placeId)) {
-    throw new HttpError("Aucun lieu trouvé avec cet identifiant");
+  let place;
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    const error = new HttpError(
+      "Un problème est survenu, le lieu n'a pas été supprimé",
+      500
+    );
+    return next(error);
   }
-  PLACES = PLACES.filter((p) => p.id !== placeId);
+
+  try {
+    await place.remove();
+  } catch (err) {
+    const error = new HttpError(
+      "Un problème est survenu, le lieu n'a pas été supprimé",
+      500
+    );
+    return next(error);
+  }
+
   res.status(200).json({ message: "Le lieu a bien été supprimé" });
 }
 
