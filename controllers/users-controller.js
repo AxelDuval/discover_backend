@@ -18,7 +18,6 @@ async function getUsers(req, res, next) {
   res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 }
 
-
 // SIGNUP (CREATE NEW USER)
 async function signUp(req, res, next) {
   const errors = validationResult(req);
@@ -67,7 +66,6 @@ async function signUp(req, res, next) {
   res.status(201).json({ user: createdUser.toObject({ getters: true }) });
 }
 
-
 // LOGIN (GET AN EXISTING USER)
 async function login(req, res, next) {
   const { email, password } = req.body;
@@ -89,7 +87,10 @@ async function login(req, res, next) {
     return next(error);
   }
 
-  res.json({ message: "Identifié !" });
+  res.json({
+    message: "Identifié !",
+    user: existingUser.toObject({ getters: true }),
+  });
 }
 
 exports.getUsers = getUsers;
