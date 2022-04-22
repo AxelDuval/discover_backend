@@ -5,10 +5,24 @@ const Place = require("../models/place");
 const User = require("../models/user");
 const { default: mongoose } = require("mongoose");
 
-
 // CRUD OPERATIONS
 
 // READ
+
+async function getPlaces(req, res, next) {
+  let places;
+  try {
+    places = await Place.find();
+  } catch (err) {
+    const error = new HttpError(
+      "La récupération des lieux a echoué, merci de réessayer",
+      500
+    );
+    return next(error);
+  }
+  res.json({ places: places.map((place) => place.toObject({ getters: true })) });
+}
+
 async function getPlaceById(req, res, next) {
   const placeId = req.params.pid;
   let place;
@@ -49,7 +63,6 @@ async function getPlacesByUserId(req, res, next) {
     places: userPlaces.places.map((place) => place.toObject({ getters: true })),
   });
 }
-
 
 // CREATE PLACE
 async function createPlace(req, res, next) {
@@ -113,7 +126,6 @@ async function createPlace(req, res, next) {
   res.status(201).json({ place: createdPlace });
 }
 
-
 // UPDATE PLACE
 async function updatePlace(req, res, next) {
   const errors = validationResult(req);
@@ -152,7 +164,6 @@ async function updatePlace(req, res, next) {
   res.status(200).json({ place: place.toObject({ getters: true }) });
 }
 
-
 // DELETE PLACE
 async function deletePlace(req, res, next) {
   const placeId = req.params.pid;
@@ -190,6 +201,7 @@ async function deletePlace(req, res, next) {
   res.status(200).json({ message: "Le lieu a bien été supprimé" });
 }
 
+exports.getPlaces = getPlaces;
 exports.getPlaceById = getPlaceById;
 exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;

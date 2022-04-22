@@ -5,11 +5,9 @@ const { check } = require("express-validator");
 
 // write a new route able to accept a dynamic uid segment,
 // extract it in the middleware function and find a place where the creator has that user ID.
-
+router.get("/", placesController.getPlaces);
 router.get("/:pid", placesController.getPlaceById);
-
 router.get("/user/:uid", placesController.getPlacesByUserId);
-
 router.post(
   "/",
   [
