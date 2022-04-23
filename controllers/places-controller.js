@@ -94,7 +94,7 @@ async function createPlace(req, res, next) {
     user = await User.findById(creator);
   } catch (err) {
     const error = new HttpError(
-      "La création du lieu a échoué, merci de réessayer.",
+      "La recherche de l'utilisateur a échoué.",
       500
     );
     return next(error);

@@ -7,7 +7,7 @@ const { check } = require("express-validator");
 // extract it in the middleware function and find a place where the creator has that user ID.
 router.get("/", placesController.getPlaces);
 router.get("/:pid", placesController.getPlaceById);
-router.get("/user/:uid", placesController.getPlacesByUserId);
+router.get("/users/:uid", placesController.getPlacesByUserId);
 router.post(
   "/",
   [
