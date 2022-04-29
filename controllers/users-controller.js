@@ -2,6 +2,8 @@ const HttpError = require("../models/http-error");
 const res = require("express/lib/response");
 const { validationResult } = require("express-validator");
 const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 // GET ALL USERS
 async function getUsers(req, res, next) {
@@ -45,11 +47,18 @@ async function signUp(req, res, next) {
     return next(error);
   }
 
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    const error = new HttpError("Impossible de créér l'utilisateur", 500);
+    return next(error);
+  }
   const createdUser = new User({
     name,
     email,
     image: "https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG.png",
-    password,
+    password: hashedPassword,
     places: [],
   });
 
@@ -63,7 +72,24 @@ async function signUp(req, res, next) {
     return next(error);
   }
 
-  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: createdUser.id, email: createdUser.email },
+      "secret_key",
+      { expiresIn: "1h" }
+    );
+  } catch (err) {
+    const error = new HttpError(
+      "Erreur lors de la création de l'utilisateur",
+      500
+    );
+    return next(error);
+  }
+
+  res
+    .status(201)
+    .json({ userId: createdUser.id, email: createdUser.email, token: token });
 }
 
 // LOGIN (GET AN EXISTING USER)
@@ -82,14 +108,49 @@ async function login(req, res, next) {
     return next(error);
   }
 
-  if (!existingUser || existingUser.password !== password) {
-    const error = new HttpError("Les identifiants sont invalides", 401);
+  if (!existingUser) {
+    const error = new HttpError("L'utilisateur n'existe pas", 401);
+    return next(error);
+  }
+
+  let isValidPassword = false;
+  try {
+    isValidPassword = await bcrypt.compare(password, existingUser.password);
+  } catch (err) {
+    const error = new HttpError(
+      "Impossible de vous identifier, merci de vérifier vos identifiants",
+      500
+    );
+    return next(error);
+  }
+
+  if (!isValidPassword) {
+    const error = new HttpError(
+      "Identifiants invalides, merci de réessayer",
+      401
+    );
+    return next(error);
+  }
+
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      "secret_key",
+      { expiresIn: "1h" }
+    );
+  } catch (err) {
+    const error = new HttpError(
+      "Erreur lors de l'identification de l'utilisateur",
+      500
+    );
     return next(error);
   }
 
   res.json({
-    message: "Identifié !",
-    user: existingUser.toObject({ getters: true }),
+    userId: existingUser.Id,
+    email: existingUser.email,
+    token: token,
   });
 }
 
