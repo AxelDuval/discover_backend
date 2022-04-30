@@ -148,7 +148,7 @@ async function login(req, res, next) {
   }
 
   res.json({
-    userId: existingUser.Id,
+    userId: existingUser.id,
     email: existingUser.email,
     token: token,
   });
