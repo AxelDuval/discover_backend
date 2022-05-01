@@ -14,7 +14,7 @@ async function getCoordsForAddress(address) {
       "Impossible de trouver un lieu avec l'adresse renseignée",
       422
     );
-    throw error;
+    // throw error;
   }
   const coordinates = data.results[0].geometry.location;
   return coordinates;
