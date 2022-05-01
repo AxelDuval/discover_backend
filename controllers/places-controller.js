@@ -183,12 +183,25 @@ async function deletePlace(req, res, next) {
   }
 
   try {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    await place.remove({ session: session });
-    place.creator.places.pull(place);
-    await place.creator.save({ session: session });
-    await session.commitTransaction();
+    await place.remove();
+
+
+    // const sess = await mongoose.startSession();
+    // sess.startTransaction();
+    // await place.remove({ session: sess });
+    // place.creator.places.pull(place);
+    // await place.creator.save({ session: sess });
+    // await sess.commitTransaction();
+
+    // const sess = await mongoose.startSession();
+    // sess.startTransaction();
+    // await createdPlace.save({ session: sess });
+    // user.places.push(createdPlace);
+    // await user.save({ session: sess, validateModifiedOnly: true });
+    // await sess.commitTransaction();
+
+
+
   } catch (err) {
     const error = new HttpError(
       "Un problème est survenu, le lieu n'a pas été supprimé",
