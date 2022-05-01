@@ -3,7 +3,7 @@ const getCoordsForAddress = require("../util/location");
 const { validationResult } = require("express-validator");
 const Place = require("../models/place");
 const User = require("../models/user");
-const  mongoose = require("mongoose");
+const mongoose = require("mongoose");
 
 // CRUD OPERATIONS
 
@@ -20,7 +20,9 @@ async function getPlaces(req, res, next) {
     );
     return next(error);
   }
-  res.json({ places: places.map((place) => place.toObject({ getters: true })) });
+  res.json({
+    places: places.map((place) => place.toObject({ getters: true })),
+  });
 }
 
 async function getPlaceById(req, res, next) {
@@ -93,10 +95,7 @@ async function createPlace(req, res, next) {
   try {
     user = await User.findById(creator);
   } catch (err) {
-    const error = new HttpError(
-      "La recherche de l'utilisateur a échoué.",
-      500
-    );
+    const error = new HttpError("La recherche de l'utilisateur a échoué.", 500);
     return next(error);
   }
 
@@ -174,34 +173,25 @@ async function deletePlace(req, res, next) {
       "Un problème est survenu, le lieu n'a pas été supprimé",
       500
     );
-    return next(error);
+    console.log(error);
+    // return next(error);
   }
 
   if (!place) {
     const error = new HttpError("Pas de lieu trouvé avec cet identifiant", 404);
+    console.log(error);
     return next(error);
   }
 
   try {
-    await place.remove();
+    // await place.remove();
 
-
-    // const sess = await mongoose.startSession();
-    // sess.startTransaction();
-    // await place.remove({ session: sess });
-    // place.creator.places.pull(place);
-    // await place.creator.save({ session: sess });
-    // await sess.commitTransaction();
-
-    // const sess = await mongoose.startSession();
-    // sess.startTransaction();
-    // await createdPlace.save({ session: sess });
-    // user.places.push(createdPlace);
-    // await user.save({ session: sess, validateModifiedOnly: true });
-    // await sess.commitTransaction();
-
-
-
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await place.remove({ session: sess });
+    place.creator.places.pull(place);
+    await place.creator.save({ session: sess, validateModifiedOnly: true });
+    await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(
       "Un problème est survenu, le lieu n'a pas été supprimé",

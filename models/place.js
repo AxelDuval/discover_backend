@@ -16,7 +16,7 @@ const placeSchema = new Schema({
 
   // Connect differents models and schemas with the ref property
   // Add the id of the created place to the corresponding creator.
-  creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
+  creator: { type: Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
 module.exports = mongoose.model("Place", placeSchema);
