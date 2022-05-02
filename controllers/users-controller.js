@@ -127,7 +127,7 @@ async function login(req, res, next) {
   if (!isValidPassword) {
     const error = new HttpError(
       "Identifiants invalides, merci de réessayer",
-      401
+      403
     );
     return next(error);
   }

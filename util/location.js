@@ -1,5 +1,5 @@
 const axios = require("axios");
-const API_KEY = "AIzaSyC_xiukSmEwSQtrspKYOpz_cw2OGpAaQY0";
+const API_KEY = "AIzaSyD-SfTESDv8RUOrHQdjzFxmv6wOUnzRhrk";
 const HttpError = require("../models/http-error");
 
 async function getCoordsForAddress(address) {
@@ -14,7 +14,7 @@ async function getCoordsForAddress(address) {
       "Impossible de trouver un lieu avec l'adresse renseignée",
       422
     );
-    // throw error;
+    throw error;
   }
   const coordinates = data.results[0].geometry.location;
   return coordinates;

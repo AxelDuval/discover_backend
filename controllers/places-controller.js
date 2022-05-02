@@ -146,6 +146,15 @@ async function updatePlace(req, res, next) {
     return next(error);
   }
 
+if(place.creator.toString() !== req.userData.userId){
+  const error = new HttpError(
+    "Vous n'êtes pas autorisé à modifier ce lieu",
+    401
+  );
+  return next(error);
+}
+
+
   place.title = title;
   place.description = description;
 
@@ -174,7 +183,7 @@ async function deletePlace(req, res, next) {
       500
     );
     console.log(error);
-    // return next(error);
+    return next(error);
   }
 
   if (!place) {
@@ -183,9 +192,15 @@ async function deletePlace(req, res, next) {
     return next(error);
   }
 
-  try {
-    // await place.remove();
+  if(place.creator.id !== req.userData.userId){
+    const error = new HttpError(
+      "Vous n'êtes pas autorisé à supprimer ce lieu",
+      401
+    );
+    return next(error);
+  }
 
+  try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
     await place.remove({ session: sess });
