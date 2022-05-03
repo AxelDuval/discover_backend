@@ -73,7 +73,7 @@ async function createPlace(req, res, next) {
     return next(new HttpError("Les données saisies sont invalides", 422));
   }
 
-  const { title, description, address, creator } = req.body;
+  const { title, description, address, creator, image } = req.body;
 
   let coordinates;
   try {
@@ -87,7 +87,7 @@ async function createPlace(req, res, next) {
     description,
     address,
     location: coordinates,
-    image: "https://picsum.photos/500?grayscale",
+    image,
     creator,
   });
 
