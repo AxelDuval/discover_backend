@@ -25,8 +25,8 @@ app.use('/api/places', placesRoutes);
 app.use('/api/users', usersRoutes);
 
 app.use((req, res, next) => {
-  const error = new HttpError('Could not find this route.', 404);
-  // throw error;
+  const error = new HttpError('Cette route est introuvable.', 404);
+  throw error;
 });
 
 app.use((error, req, res, next) => {
@@ -34,7 +34,7 @@ app.use((error, req, res, next) => {
     return next(error);
   }
   res.status(error.code || 500);
-  res.json({ message: error.message || 'An unknown error occurred!' });
+  res.json({ message: error.message || 'Une erreur est survenue.' });
 });
 
 mongoose
