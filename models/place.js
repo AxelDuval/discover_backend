@@ -1,14 +1,16 @@
 const mongoose = require("mongoose");
+var uniqueValidator = require("mongoose-unique-validator");
+
 
 // Define the schema and the corresponding model
 
 const Schema = mongoose.Schema;
 
 const placeSchema = new Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
+  title: { type: String, required: true, maxlength: 255 },
+  description: { type: String, required: true, minlength: 5, maxlength: 2000 },
   image: { type: String, required: true },
-  address: { type: String, required: true },
+  address: { type: String, required: true, maxlength: 600 },
   location: {
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },

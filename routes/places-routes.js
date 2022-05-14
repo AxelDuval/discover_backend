@@ -17,14 +17,17 @@ router.post(
   [
     check("title").not().isEmpty(),
     check("address").not().isEmpty(),
-    check("description").isLength({ min: 5 }),
+    check("description").isLength({ min: 5, max: 255 }),
   ],
   placesController.createPlace
 );
 
 router.patch(
   "/:pid",
-  [check("title").not().isEmpty(), check("description").isLength({ min: 5 })],
+  [
+    check("title").not().isEmpty(),
+    check("description").isLength({ min: 5, max: 2000 }),
+  ],
   placesController.updatePlace
 );
 
