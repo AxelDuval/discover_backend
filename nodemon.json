@@ -1,0 +1,9 @@
+{
+    "env": {
+        "DB_USER": "afpa",
+        "DB_PASSWORD": "jtuJMhvmeOkAgubt",
+        "DB_NAME": "mern",
+        "GOOGLE_API_KEY": "AIzaSyD-SfTESDv8RUOrHQdjzFxmv6wOUnzRhrk",
+        "JWT_KEY":"secret_key_kjhhejks"
+    }
+}
